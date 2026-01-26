@@ -6,6 +6,29 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
+  "keywords": [
+    "motion-photo",
+    "live-photo",
+    "google-motion-photo",
+    "samsung-motion-photo",
+    "iphone-live-photo",
+    "react",
+    "vue",
+    "vanilla-js",
+    "video",
+    "media",
+    "player"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wjsoj/motion-photo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wjsoj/motion-photo/issues"
+  },
+  "homepage": "https://github.com/wjsoj/motion-photo#readme",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
