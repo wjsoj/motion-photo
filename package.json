@@ -45,11 +45,12 @@
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
     "happy-dom": "^20.3.9",
-    "tsup": "^8.5.1"
+    "tsup": "^8.5.1",
+    "vue": "^3.5.13"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
-    "vue": ">=3.0.0"
+    "vue": ""
   },
   "peerDependenciesMeta": {
     "react": {

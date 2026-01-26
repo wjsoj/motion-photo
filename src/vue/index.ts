@@ -1,2 +1,1 @@
-// Vue adapter - TODO: implement
-export {};
+export { useLivePhoto } from './useLivePhoto';
