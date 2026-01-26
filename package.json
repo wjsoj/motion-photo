@@ -1,0 +1,61 @@
+{
+  "name": "motion-photo",
+  "version": "0.1.0",
+  "description": "Headless Motion Photo & Live Photo library for React, Vue, and vanilla JS",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.esm.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "require": "./dist/react.cjs",
+      "import": "./dist/react.esm.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "require": "./dist/vue.cjs",
+      "import": "./dist/vue.esm.js"
+    },
+    "./vanilla": {
+      "types": "./dist/vanilla.d.ts",
+      "require": "./dist/vanilla.cjs",
+      "import": "./dist/vanilla.esm.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "bun test",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.12",
+    "@types/bun": "latest",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
+    "tsup": "^8.5.1"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "vue": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  }
+}
