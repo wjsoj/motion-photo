@@ -1,2 +1,1 @@
-// Vanilla adapter - TODO: implement
-export {};
+export { LivePhotoPlayer } from './LivePhotoPlayer';
