@@ -44,6 +44,7 @@
     "@types/bun": "latest",
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
+    "happy-dom": "^20.3.9",
     "tsup": "^8.5.1"
   },
   "peerDependencies": {
