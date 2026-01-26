@@ -82,6 +82,14 @@ export class LivePhotoPlayer {
     this.core.destroy();
   }
 
+  on(event: string, callback: (...args: any[]) => void): void {
+    this.core.on(event as any, callback);
+  }
+
+  off(event: string, callback: (...args: any[]) => void): void {
+    this.core.off(event as any, callback);
+  }
+
   get state() {
     return this.core.state;
   }

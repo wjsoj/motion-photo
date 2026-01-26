@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Motion Photo Demo</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .live-photo {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        user-select: none;
+      }
+      .live-photo img {
+        max-width: 100%;
+        display: block;
+      }
+      .live-photo video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .live-photo.playing video {
+        opacity: 1;
+      }
+      .status {
+        margin-top: 20px;
+        padding: 10px;
+        background: #f0f0f0;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Motion Photo Demo</h1>
+    <p>Click or hover on the image to play the motion photo.</p>
+
+    <div id="container" class="live-photo"></div>
+
+    <div class="status">
+      <strong>State:</strong> <span id="state">idle</span>
+    </div>
+
+    <div id="container2" class="live-photo" style="margin-top: 20px"></div>
+
+    <script type="module">
+      import { LivePhotoPlayer } from '../dist/vanilla.esm.js';
+
+      // Demo 1: Click trigger
+      const player1 = new LivePhotoPlayer('#container', {
+        trigger: 'click',
+        showLiveBadge: true,
+      });
+
+      // Load a sample image (for demo purposes, we'll use a regular image)
+      player1.load('https://picsum.photos/600/400');
+
+      player1.on('stateChange', (state) => {
+        document.getElementById('state').textContent = state;
+        const container = document.getElementById('container');
+        if (state === 'playing') {
+          container.classList.add('playing');
+        } else {
+          container.classList.remove('playing');
+        }
+      });
+
+      // Demo 2: Hover trigger
+      const player2 = new LivePhotoPlayer('#container2', {
+        trigger: 'hover',
+        showLiveBadge: true,
+      });
+
+      player2.load('https://picsum.photos/600/401');
+    </script>
+  </body>
+</html>
