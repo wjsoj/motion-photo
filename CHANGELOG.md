@@ -1,5 +1,11 @@
 # motion-photo
 
+## 0.2.2
+
+### Patch Changes
+
+- update workflow
+
 ## 0.2.1
 
 ### Patch Changes
