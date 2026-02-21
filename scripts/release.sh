@@ -52,7 +52,26 @@ CURRENT_VERSION=$(bun run --silent pkg-version 2>/dev/null || grep '"version"' p
 echo -e "${YELLOW}Current version: ${CURRENT_VERSION}${NC}"
 echo ""
 
-# Ask for version bump type
+# Check for existing changesets
+echo ""
+echo -e "${YELLOW}Checking for changesets...${NC}"
+if [ ! -d ".changeset" ] || [ -z "$(ls -A .changeset/*.md 2>/dev/null | grep -v README)" ]; then
+    echo -e "${YELLOW}No changeset found. Creating one...${NC}"
+    echo ""
+    bun changeset
+    echo ""
+else
+    echo -e "${GREEN}Changeset found!${NC}"
+    ls -la .changeset/*.md | grep -v README
+    echo ""
+    read -p "Create new changeset? [y/N]: " new_changeset
+    if [ "$new_changeset" = "y" ] || [ "$new_changeset" = "Y" ]; then
+        bun changeset
+    fi
+    echo ""
+fi
+
+# Ask for version bump type (if not provided via flag)
 if [ -z "$VERSION_TYPE" ]; then
     echo "Select version bump type:"
     echo "  1) Patch (bug fixes)"
@@ -119,15 +138,61 @@ echo -e "${YELLOW}Publishing to npm (use 2FA)...${NC}"
 echo ""
 bun run release
 echo ""
+
+# Get new version
+NEW_VERSION=$(bun run --silent pkg-version 2>/dev/null || grep '"version"' package.json | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  Release Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "${BLUE}Next steps:${NC}"
-echo "  1. Push changes to GitHub:"
-echo "     git add ."
-echo "     git commit -m 'chore: release v${VERSION_TYPE}'"
-echo "     git push && git push --tags"
+
+# Check if tag already exists
+echo -e "${YELLOW}Checking git status and tags...${NC}"
+if git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
+    echo -e "${RED}Error: Tag v${NEW_VERSION} already exists!${NC}"
+    echo ""
+    echo "Possible causes:"
+    echo "  1. Version was already released"
+    echo "  2. Previous release attempt failed"
+    echo ""
+    read -p "Delete existing tag and retry? [y/N]: " retry
+    if [ "$retry" = "y" ] || [ "$retry" = "Y" ]; then
+        git tag -d "v${NEW_VERSION}" 2>/dev/null || true
+        git push origin :refs/tags/v${NEW_VERSION} 2>/dev/null || true
+        echo -e "${GREEN}Tag deleted. Continuing...${NC}"
+    else
+        echo -e "${RED}Aborted${NC}"
+        exit 1
+    fi
+fi
 echo ""
-echo "  2. Demo will be deployed automatically"
+
+# Commit changes
+echo -e "${YELLOW}Committing changes...${NC}"
+if git diff --quiet && git diff --cached --quiet; then
+    echo -e "${YELLOW}No changes to commit${NC}"
+else
+    git add .
+    git commit -m "chore: release v${NEW_VERSION}"
+    echo -e "${GREEN}Committed!${NC}"
+fi
+echo ""
+
+# Create and push tag
+echo -e "${YELLOW}Creating tag v${NEW_VERSION}...${NC}"
+git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
+echo -e "${GREEN}Tag created!${NC}"
+echo ""
+
+# Push
+echo -e "${YELLOW}Pushing to remote...${NC}"
+git push origin main
+git push origin "v${NEW_VERSION}"
+echo ""
+echo -e "${GREEN}Done!${NC}"
+echo ""
+echo -e "${BLUE}GitHub Actions will:${NC}"
+echo "  1. Run CI validation"
+echo "  2. Deploy demo to GitHub Pages"
+echo "  3. Create GitHub Release (on tag push)"
 echo ""

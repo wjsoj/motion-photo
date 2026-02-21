@@ -2,47 +2,64 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
   workflow_dispatch:
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build & Validate
+  release:
+    name: Create GitHub Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get changes since last tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            CHANGES=$(git log --oneline -20 --format="- %s")
+          else
+            CHANGES=$(git log $PREV_TAG..HEAD --format="- %s")
+          fi
+          echo "$CHANGES" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          bun-version: latest
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Changes in this release
 
-      - name: Cache Bun dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+            ${{ steps.changelog.outputs.CHANGES }}
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            ---
 
-      - name: Run linter
-        run: bun run lint
+            ## Installation
 
-      - name: Run tests
-        run: bun test
+            ```bash
+            bun add motion-photo
+            # or
+            npm install motion-photo
+            ```
 
-      - name: Build package
-        run: bun run build
+            ## Usage
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
+            See [README.md](https://github.com/wjsoj/motion-photo#readme) for full documentation.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

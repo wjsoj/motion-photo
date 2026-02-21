@@ -1,9 +1,10 @@
+import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: '/motion-photo/',
   root: 'demo',
   plugins: [react(), vue()],
   resolve: {
