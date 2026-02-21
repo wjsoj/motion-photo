@@ -1,6 +1,6 @@
 {
   "name": "motion-photo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Headless Motion Photo & Live Photo library for React, Vue, and vanilla JS",
   "type": "module",
   "main": "./dist/index.cjs",
