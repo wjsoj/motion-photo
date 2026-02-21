@@ -15,13 +15,28 @@ export type MotionPhotoInput =
   | { imgSrc: string; videoSrc: string }; // iPhone Live Photo
 
 // Event types
-export type PlayerEvent =
-  | 'stateChange'
-  | 'load'
-  | 'play'
-  | 'pause'
-  | 'error'
-  | 'ended';
+export type PlayerEvent = 'stateChange' | 'load' | 'play' | 'pause' | 'error' | 'ended';
+
+// Badge style types
+export type LiveBadgeStyle = 'text' | 'icon' | 'ring' | 'concentric';
+export type ThemeVariant = 'light' | 'dark' | 'auto';
+export type BadgeSize = 'sm' | 'md' | 'lg';
+export type PlayPauseIndicatorStyle = 'icon' | 'ripple' | 'none';
+
+// Badge style configuration
+export interface LiveBadgeStyleConfig {
+  style: LiveBadgeStyle;
+  color?: string;
+  backgroundColor?: string;
+  size?: BadgeSize;
+  animation?: boolean;
+}
+
+// Theme configuration
+export interface ThemeConfig {
+  variant: ThemeVariant;
+  cssVariables?: Partial<Record<string, string>>;
+}
 
 // Configuration interface with sensible defaults
 export interface LivePhotoConfig {
@@ -35,6 +50,9 @@ export interface LivePhotoConfig {
   autoReplay: boolean;
   replayDelay: number;
 
+  // Auto-play once on load (plays once when ready, then waits for user interaction)
+  playOnceOnLoad: boolean;
+
   // Transitions
   fadeDuration: number;
 
@@ -45,10 +63,22 @@ export interface LivePhotoConfig {
   // Video
   loop: boolean;
 
-  // UI
+  // UI - Badge
   showLiveBadge: boolean;
   liveBadgePosition: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   liveBadgeText: string;
+  liveBadgeStyle?: LiveBadgeStyleConfig;
+
+  // UI - Theme
+  theme?: ThemeConfig;
+
+  // UI - Play/Pause indicator
+  showPlayPauseIndicator?: boolean;
+  playPauseIndicatorStyle?: PlayPauseIndicatorStyle;
+
+  // UI - Accessibility
+  ariaLabel?: string;
+  role?: string;
 
   // Callbacks
   onStateChange?: (state: PlayerState) => void;
@@ -78,6 +108,6 @@ export interface ILivePhotoPlayer {
   mute(isMuted: boolean): void;
   destroy(): void;
 
-  on(event: PlayerEvent, callback: (...args: any[]) => void): void;
-  off(event: PlayerEvent, callback: (...args: any[]) => void): void;
+  on(event: PlayerEvent, callback: (...args: unknown[]) => void): void;
+  off(event: PlayerEvent, callback: (...args: unknown[]) => void): void;
 }

@@ -1,3 +1,6 @@
+import { getDefaultConfig } from './defaults';
+import { EventEmitter } from './event-emitter';
+import { MotionPhotoParser } from './parser';
 import type {
   ILivePhotoPlayer,
   LivePhotoConfig,
@@ -6,18 +9,15 @@ import type {
   PlayerEvent,
   PlayerState,
 } from './types';
-import { MotionPhotoParser } from './parser';
-import { EventEmitter } from './event-emitter';
-import { getDefaultConfig } from './defaults';
 
-type PlayerEvents = {
+interface PlayerEvents {
   stateChange: PlayerState;
   load: ParsedMotionPhoto;
-  play: void;
-  pause: void;
+  play: undefined;
+  pause: undefined;
   error: Error;
-  ended: void;
-};
+  ended: undefined;
+}
 
 export class LivePhotoPlayer implements ILivePhotoPlayer {
   public readonly config: LivePhotoConfig;
@@ -28,6 +28,8 @@ export class LivePhotoPlayer implements ILivePhotoPlayer {
   private _parsedData: ParsedMotionPhoto | null = null;
   private videoElement: HTMLVideoElement | null = null;
   private autoReplayTimer: number | null = null;
+  private hasPlayedOnce = false;
+  private playOnceOnLoadTimer: number | null = null;
 
   constructor(config: Partial<LivePhotoConfig> = {}) {
     this.config = { ...getDefaultConfig(), ...config };
@@ -43,6 +45,10 @@ export class LivePhotoPlayer implements ILivePhotoPlayer {
     return this._parsedData;
   }
 
+  setDebugLogger(logger: (message: string) => void): void {
+    this.parser.setDebugLogger(logger);
+  }
+
   async load(input: MotionPhotoInput): Promise<void> {
     this.setState('parsing');
 
@@ -50,6 +56,11 @@ export class LivePhotoPlayer implements ILivePhotoPlayer {
       this._parsedData = await this.parser.parse(input);
       this.setState('ready');
       this.emitter.emit('load', this._parsedData);
+
+      // Auto-play once on load if enabled and video is available
+      if (this.config.playOnceOnLoad && this._parsedData?.hasVideo && this.videoElement) {
+        this.schedulePlayOnceOnLoad();
+      }
     } catch (error) {
       this.setState('error');
       this.emitter.emit('error', error as Error);
@@ -60,9 +71,22 @@ export class LivePhotoPlayer implements ILivePhotoPlayer {
   play(): void {
     if (!this.videoElement || !this._parsedData?.hasVideo) return;
 
-    this.videoElement.play();
-    this.setState('playing');
-    this.emitter.emit('play', undefined);
+    if (this.videoElement.readyState >= 2) {
+      this.videoElement.play();
+      this.setState('playing');
+      this.emitter.emit('play', undefined);
+      return;
+    }
+
+    this.videoElement.addEventListener(
+      'canplay',
+      () => {
+        this.videoElement?.play();
+        this.setState('playing');
+        this.emitter.emit('play', undefined);
+      },
+      { once: true }
+    );
   }
 
   pause(): void {
@@ -89,12 +113,25 @@ export class LivePhotoPlayer implements ILivePhotoPlayer {
   attachVideo(video: HTMLVideoElement): void {
     this.videoElement = video;
     this.setupVideoListeners();
+
+    // Auto-play once on load if enabled when video is attached
+    // This handles the case where load() was called before video element existed
+    if (this.config.playOnceOnLoad && this._parsedData?.hasVideo && !this.hasPlayedOnce) {
+      this.schedulePlayOnceOnLoad();
+    }
   }
 
   private setupVideoListeners(): void {
     if (!this.videoElement) return;
 
     this.videoElement.addEventListener('ended', () => {
+      if (this.config.playOnceOnLoad && !this.hasPlayedOnce) {
+        this.hasPlayedOnce = true;
+        this.setState('ready');
+        this.emitter.emit('ended', undefined);
+        return;
+      }
+
       if (this.config.autoReplay) {
         this.scheduleAutoReplay();
       } else {
@@ -104,12 +141,26 @@ export class LivePhotoPlayer implements ILivePhotoPlayer {
     });
   }
 
-  private scheduleAutoReplay(): void {
-    if (this.autoReplayTimer) clearTimeout(this.autoReplayTimer);
+  private schedulePlayOnceOnLoad(): void {
+    if (this.playOnceOnLoadTimer) {
+      clearTimeout(this.playOnceOnLoadTimer);
+    }
 
-    this.autoReplayTimer = window.setTimeout(() => {
+    this.playOnceOnLoadTimer = setTimeout(() => {
+      if (this.videoElement && !this.hasPlayedOnce) {
+        this.play();
+      }
+    }, 100) as unknown as number;
+  }
+
+  private scheduleAutoReplay(): void {
+    if (this.autoReplayTimer) {
+      clearTimeout(this.autoReplayTimer);
+    }
+
+    this.autoReplayTimer = setTimeout(() => {
       this.play();
-    }, this.config.replayDelay);
+    }, this.config.replayDelay) as unknown as number;
   }
 
   private setState(newState: PlayerState): void {
@@ -120,16 +171,21 @@ export class LivePhotoPlayer implements ILivePhotoPlayer {
     this.config.onStateChange?.(newState);
   }
 
-  on(event: PlayerEvent, callback: (...args: any[]) => void): void {
-    this.emitter.on(event, callback as any);
+  on(event: PlayerEvent, callback: (...args: unknown[]) => void): void {
+    this.emitter.on(event, callback as (payload: unknown) => void);
   }
 
-  off(event: PlayerEvent, callback: (...args: any[]) => void): void {
-    this.emitter.off(event, callback as any);
+  off(event: PlayerEvent, callback: (...args: unknown[]) => void): void {
+    this.emitter.off(event, callback as (payload: unknown) => void);
   }
 
   destroy(): void {
-    if (this.autoReplayTimer) clearTimeout(this.autoReplayTimer);
+    if (this.autoReplayTimer) {
+      clearTimeout(this.autoReplayTimer);
+    }
+    if (this.playOnceOnLoadTimer) {
+      clearTimeout(this.playOnceOnLoadTimer);
+    }
 
     if (this._parsedData) {
       this.parser.revokeURL(this._parsedData.imageSrc);
@@ -139,8 +195,8 @@ export class LivePhotoPlayer implements ILivePhotoPlayer {
     }
 
     this.emitter.clear();
-
     this._state = 'idle';
     this._parsedData = null;
+    this.hasPlayedOnce = false;
   }
 }

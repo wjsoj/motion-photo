@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
 import { MotionPhotoParser } from '../../src/core/parser';
 
 describe('MotionPhotoParser', () => {
@@ -14,9 +14,7 @@ describe('MotionPhotoParser', () => {
     const ftypHeader = new Uint8Array([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70]);
     const mp4Data = new Uint8Array(50).fill(0x00);
 
-    const combined = new Uint8Array(
-      jpegData.length + ftypHeader.length + mp4Data.length
-    );
+    const combined = new Uint8Array(jpegData.length + ftypHeader.length + mp4Data.length);
     combined.set(jpegData, 0);
     combined.set(ftypHeader, jpegData.length);
     combined.set(mp4Data, jpegData.length + ftypHeader.length);

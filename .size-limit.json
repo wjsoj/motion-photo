@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Core",
+    "path": "dist/index.esm.js",
+    "limit": "10 KB"
+  },
+  {
+    "name": "React",
+    "path": "dist/react.esm.js",
+    "limit": "15 KB"
+  },
+  {
+    "name": "Vue",
+    "path": "dist/vue.esm.js",
+    "limit": "15 KB"
+  },
+  {
+    "name": "Vanilla",
+    "path": "dist/vanilla.esm.js",
+    "limit": "12 KB"
+  }
+]

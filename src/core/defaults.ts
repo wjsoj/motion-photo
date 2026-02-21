@@ -1,33 +1,30 @@
-import { LivePhotoConfig } from './types';
+import type { LivePhotoConfig } from './types';
 
 export function getDefaultConfig(): LivePhotoConfig {
   return {
-    // Playback
-    trigger: 'click',
+    trigger: 'manual',
     longPressDelay: 500,
     autoReplay: false,
     replayDelay: 2000,
-
-    // Transitions
+    playOnceOnLoad: true,
     fadeDuration: 300,
-
-    // Audio
     muted: true,
     showMuteButton: 'auto',
-
-    // Video
-    loop: true,
-
-    // UI
+    loop: false,
     showLiveBadge: true,
     liveBadgePosition: 'top-left',
     liveBadgeText: 'LIVE',
-
-    // Callbacks
-    onStateChange: undefined,
-    onPlay: undefined,
-    onPause: undefined,
-    onError: undefined,
-    onEnded: undefined,
+    liveBadgeStyle: {
+      style: 'concentric',
+      size: 'md',
+      animation: true,
+    },
+    theme: {
+      variant: 'auto',
+    },
+    showPlayPauseIndicator: false,
+    playPauseIndicatorStyle: 'icon',
+    ariaLabel: 'Live Photo',
+    role: 'button',
   };
 }

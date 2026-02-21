@@ -1,0 +1,132 @@
+/**
+ * CSS Variables for Live Photo Components
+ * Modern glassmorphism design with translucent backgrounds
+ */
+
+:root {
+  /* Container - transparent, no background */
+  --live-photo-bg: transparent;
+
+  /* Primary brand color */
+  --live-photo-primary: #007aff;
+  --live-photo-primary-hover: #0a84ff;
+
+  /* Badge colors - glassmorphism style */
+  --live-badge-bg: rgba(255, 255, 255, 0.15);
+  --live-badge-text: #ffffff;
+  --live-badge-size: 20px;
+  --live-badge-font-size: 10px;
+  --live-badge-padding-x: 10px;
+  --live-badge-padding-y: 5px;
+  --live-badge-backdrop-blur: 12px;
+  --live-badge-border: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* Ring styles */
+  --live-ring-color: #ffffff;
+  --live-ring-width: 1.5px;
+  --live-ring-size: 4px;
+  --live-ring-gap: 3px;
+
+  /* Animation durations */
+  --live-photo-transition-duration: 0.25s;
+  --live-photo-pulse-duration: 2s;
+  --live-photo-ripple-duration: 0.5s;
+
+  /* Container - larger radius for modern look */
+  --live-photo-border-radius: 16px;
+  --live-photo-cursor: pointer;
+
+  /* Icon sizes */
+  --live-icon-size-sm: 16px;
+  --live-icon-size-md: 20px;
+  --live-icon-size-lg: 24px;
+
+  /* Play/Pause indicator - glassmorphism */
+  --live-play-pause-size: 52px;
+  --live-play-pause-bg: rgba(255, 255, 255, 0.15);
+  --live-play-pause-color: #ffffff;
+  --live-play-pause-backdrop-blur: 16px;
+  --live-play-pause-border: 1px solid rgba(255, 255, 255, 0.25);
+
+  /* Mute button - glassmorphism */
+  --live-mute-btn-size: 36px;
+  --live-mute-btn-bg: rgba(255, 255, 255, 0.15);
+  --live-mute-btn-color: #ffffff;
+  --live-mute-btn-hover-bg: rgba(255, 255, 255, 0.25);
+  --live-mute-btn-backdrop-blur: 12px;
+  --live-mute-btn-border: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* Loading state - glassmorphism */
+  --live-loading-spinner-size: 36px;
+  --live-loading-spinner-color: #ffffff;
+  --live-loading-bg: rgba(0, 0, 0, 0.3);
+  --live-loading-backdrop-blur: 8px;
+
+  /* Error state - glassmorphism */
+  --live-error-bg: rgba(255, 59, 48, 0.85);
+  --live-error-text: #ffffff;
+  --live-error-icon-size: 32px;
+  --live-error-backdrop-blur: 12px;
+
+  /* Z-index layers */
+  --live-z-index-base: 1;
+  --live-z-index-badge: 10;
+  --live-z-index-controls: 20;
+  --live-z-index-overlay: 30;
+  --live-z-index-tooltip: 40;
+}
+
+/* Dark theme overrides - glassmorphism on dark */
+[data-live-theme="dark"] {
+  --live-badge-bg: rgba(0, 0, 0, 0.25);
+  --live-badge-border: 1px solid rgba(255, 255, 255, 0.1);
+  --live-play-pause-bg: rgba(0, 0, 0, 0.25);
+  --live-play-pause-border: 1px solid rgba(255, 255, 255, 0.15);
+  --live-mute-btn-bg: rgba(0, 0, 0, 0.25);
+  --live-mute-btn-hover-bg: rgba(0, 0, 0, 0.35);
+  --live-mute-btn-border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Light theme overrides - glassmorphism on light */
+[data-live-theme="light"] {
+  --live-badge-bg: rgba(255, 255, 255, 0.6);
+  --live-badge-text: #1a1a1a;
+  --live-badge-border: 1px solid rgba(255, 255, 255, 0.8);
+  --live-ring-color: #1a1a1a;
+  --live-play-pause-bg: rgba(255, 255, 255, 0.6);
+  --live-play-pause-color: #1a1a1a;
+  --live-play-pause-border: 1px solid rgba(255, 255, 255, 0.8);
+  --live-mute-btn-bg: rgba(255, 255, 255, 0.6);
+  --live-mute-btn-color: #1a1a1a;
+  --live-mute-btn-hover-bg: rgba(255, 255, 255, 0.8);
+  --live-mute-btn-border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Auto theme - based on system preference */
+@media (prefers-color-scheme: dark) {
+  [data-live-theme="auto"] {
+    --live-badge-bg: rgba(0, 0, 0, 0.25);
+    --live-badge-border: 1px solid rgba(255, 255, 255, 0.1);
+    --live-play-pause-bg: rgba(0, 0, 0, 0.25);
+    --live-play-pause-border: 1px solid rgba(255, 255, 255, 0.15);
+    --live-mute-btn-bg: rgba(0, 0, 0, 0.25);
+    --live-mute-btn-hover-bg: rgba(0, 0, 0, 0.35);
+    --live-mute-btn-border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-live-theme="auto"] {
+    --live-badge-bg: rgba(255, 255, 255, 0.6);
+    --live-badge-text: #1a1a1a;
+    --live-badge-border: 1px solid rgba(255, 255, 255, 0.8);
+    --live-ring-color: #1a1a1a;
+    --live-play-pause-bg: rgba(255, 255, 255, 0.6);
+    --live-play-pause-color: #1a1a1a;
+    --live-play-pause-border: 1px solid rgba(255, 255, 255, 0.8);
+    --live-mute-btn-bg: rgba(255, 255, 255, 0.6);
+    --live-mute-btn-color: #1a1a1a;
+    --live-mute-btn-hover-bg: rgba(255, 255, 255, 0.8);
+    --live-mute-btn-border: 1px solid rgba(255, 255, 255, 0.8);
+  }
+}

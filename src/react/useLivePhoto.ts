@@ -1,73 +1,89 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  type LivePhotoConfig,
   LivePhotoPlayer,
-  LivePhotoConfig,
-  MotionPhotoInput,
-  PlayerState,
+  type MotionPhotoInput,
+  type ParsedMotionPhoto,
+  type PlayerState,
 } from '../core';
 
-export interface UseLivePhotoOptions extends Partial<LivePhotoConfig> {
-  src: MotionPhotoInput;
+function getSrcKey(src: MotionPhotoInput): string {
+  if (typeof src === 'string') return src;
+  if (src instanceof File) return `file:${src.name}:${src.size}:${src.lastModified}`;
+  if (src instanceof Blob) return `blob:${src.size}:${src.type}`;
+  return `${src.imgSrc}|${src.videoSrc}`;
 }
 
-export function useLivePhoto(options: UseLivePhotoOptions) {
+export function useLivePhoto(options: { src: MotionPhotoInput } & Partial<LivePhotoConfig>) {
   const [state, setState] = useState<PlayerState>('idle');
   const [error, setError] = useState<Error | null>(null);
+  const [parsedData, setParsedData] = useState<ParsedMotionPhoto | null>(null);
   const playerRef = useRef<LivePhotoPlayer | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  const stableSrcKey = useMemo(() => getSrcKey(options.src), [options.src]);
+
+  const setVideoRef = useCallback((el: HTMLVideoElement | null) => {
+    videoRef.current = el;
+    if (el && playerRef.current) {
+      playerRef.current.attachVideo(el);
+    }
+  }, []);
+
+  // Store options in a ref to avoid dependency issues
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stableSrcKey is intentionally used to trigger re-initialization when source changes
   useEffect(() => {
-    const { src, ...config } = options;
+    const { src, ...config } = optionsRef.current;
     const player = new LivePhotoPlayer(config);
     playerRef.current = player;
 
-    player.on('stateChange', (newState) => setState(newState));
-    player.on('error', (err) => setError(err));
+    player.on('stateChange', (newState: unknown) => setState(newState as PlayerState));
+    player.on('error', (err: unknown) => setError(err as Error));
+    player.on('load', (data: unknown) => setParsedData(data as ParsedMotionPhoto));
+
+    if (videoRef.current) {
+      player.attachVideo(videoRef.current);
+    }
 
     player.load(src);
 
     return () => {
       player.destroy();
+      playerRef.current = null;
     };
-  }, [options.src]);
-
-  useEffect(() => {
-    if (videoRef.current && playerRef.current) {
-      playerRef.current.attachVideo(videoRef.current);
-    }
-  }, [videoRef.current]);
+  }, [stableSrcKey]);
 
   const play = useCallback(() => playerRef.current?.play(), []);
   const pause = useCallback(() => playerRef.current?.pause(), []);
   const toggle = useCallback(() => playerRef.current?.toggle(), []);
-  const mute = useCallback(
-    (isMuted: boolean) => playerRef.current?.mute(isMuted),
-    []
-  );
+  const mute = useCallback((isMuted: boolean) => playerRef.current?.mute(isMuted), []);
 
   const handleClick = useCallback(() => {
-    if (options.trigger === 'click') {
+    if (options.trigger === 'click' || !options.trigger) {
       toggle();
     }
-  }, [options.trigger, toggle]);
+  }, [toggle, options.trigger]);
 
   const handleHover = useCallback(() => {
     if (options.trigger === 'hover') {
       play();
     }
-  }, [options.trigger, play]);
+  }, [play, options.trigger]);
 
   const handleHoverEnd = useCallback(() => {
     if (options.trigger === 'hover') {
       pause();
     }
-  }, [options.trigger, pause]);
+  }, [pause, options.trigger]);
 
   return {
     state,
     error,
-    videoRef,
-    parsedData: playerRef.current?.parsedData,
+    videoRef: setVideoRef,
+    parsedData,
     play,
     pause,
     toggle,

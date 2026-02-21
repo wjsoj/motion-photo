@@ -1,0 +1,32 @@
+# Code Owners for motion-photo
+# These owners will be requested for review when someone opens a pull request.
+
+# Default owner for everything
+* @wjsoj
+
+# Core library
+/src/core/ @wjsoj
+
+# React adapter
+/src/react/ @wjsoj
+
+# Vue adapter
+/src/vue/ @wjsoj
+
+# Vanilla JS adapter
+/src/vanilla/ @wjsoj
+
+# Build configuration
+/tsup.config.ts @wjsoj
+/vite.config.ts @wjsoj
+
+# CI/CD
+/.github/ @wjsoj
+
+# Documentation
+/*.md @wjsoj
+/docs/ @wjsoj
+
+# Package configuration
+/package.json @wjsoj
+/bun.lock @wjsoj

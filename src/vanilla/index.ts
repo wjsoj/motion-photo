@@ -1,1 +1,2 @@
-export { LivePhotoPlayer } from './LivePhotoPlayer';
+export type { LivePhotoPlayerOptions } from './LivePhotoPlayer';
+export { default, LivePhotoPlayer } from './LivePhotoPlayer';

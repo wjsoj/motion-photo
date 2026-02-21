@@ -1,14 +1,15 @@
-export class EventEmitter<TEvents extends Record<string, any>> {
-  private listeners = new Map<keyof TEvents, Set<Function>>();
+export class EventEmitter<TEvents extends { [K in keyof TEvents]: unknown }> {
+  private listeners = new Map<keyof TEvents, Set<(payload: unknown) => void>>();
 
   on<TEventName extends keyof TEvents>(
     event: TEventName,
     callback: (payload: TEvents[TEventName]) => void
   ): () => void {
+    const eventListeners = this.listeners.get(event) ?? new Set();
     if (!this.listeners.has(event)) {
-      this.listeners.set(event, new Set());
+      this.listeners.set(event, eventListeners);
     }
-    this.listeners.get(event)!.add(callback);
+    eventListeners.add(callback as (payload: unknown) => void);
 
     return () => this.off(event, callback);
   }
@@ -17,14 +18,16 @@ export class EventEmitter<TEvents extends Record<string, any>> {
     event: TEventName,
     callback: (payload: TEvents[TEventName]) => void
   ): void {
-    this.listeners.get(event)?.delete(callback);
+    this.listeners.get(event)?.delete(callback as (payload: unknown) => void);
   }
 
-  emit<TEventName extends keyof TEvents>(
-    event: TEventName,
-    payload: TEvents[TEventName]
-  ): void {
-    this.listeners.get(event)?.forEach((callback) => callback(payload));
+  emit<TEventName extends keyof TEvents>(event: TEventName, payload: TEvents[TEventName]): void {
+    const eventListeners = this.listeners.get(event);
+    if (eventListeners) {
+      for (const callback of eventListeners) {
+        callback(payload);
+      }
+    }
   }
 
   clear(): void {
