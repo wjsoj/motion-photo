@@ -99,22 +99,22 @@ echo ""
 echo -e "${GREEN}Selected version type: ${VERSION_TYPE}${NC}"
 echo ""
 
-# Run validation
+# Run validation (without build)
 if [ "$SKIP_TESTS" = false ]; then
     echo -e "${YELLOW}Running validation (lint, type-check, test)...${NC}"
-    bun run validate
+    bun run validate:ci
     echo -e "${GREEN}Validation passed!${NC}"
     echo ""
 fi
 
-# Build
+# Build (only once)
 echo -e "${YELLOW}Building package...${NC}"
 bun run build
 echo -e "${GREEN}Build complete!${NC}"
 echo ""
 
-# Update version
-echo -e "${YELLOW}Updating version...${NC}"
+# Update version (this also creates git tag automatically)
+echo -e "${YELLOW}Updating version (this also creates git tag)...${NC}"
 bun run version
 echo -e "${GREEN}Version updated!${NC}"
 echo ""
@@ -132,11 +132,11 @@ if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
     exit 1
 fi
 
-# Publish to npm (will prompt for 2FA)
+# Publish to npm (reusing already built dist)
 echo ""
 echo -e "${YELLOW}Publishing to npm (use 2FA)...${NC}"
 echo ""
-bun run release
+bunx changeset publish
 echo ""
 
 # Get new version
@@ -146,29 +146,18 @@ echo -e "${GREEN}  Release Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
-# Check if tag already exists
-echo -e "${YELLOW}Checking git status and tags...${NC}"
+# Check if tag already exists (created by bun run version)
 if git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
-    echo -e "${RED}Error: Tag v${NEW_VERSION} already exists!${NC}"
-    echo ""
-    echo "Possible causes:"
-    echo "  1. Version was already released"
-    echo "  2. Previous release attempt failed"
-    echo ""
-    read -p "Delete existing tag and retry? [y/N]: " retry
-    if [ "$retry" = "y" ] || [ "$retry" = "Y" ]; then
-        git tag -d "v${NEW_VERSION}" 2>/dev/null || true
-        git push origin :refs/tags/v${NEW_VERSION} 2>/dev/null || true
-        echo -e "${GREEN}Tag deleted. Continuing...${NC}"
-    else
-        echo -e "${RED}Aborted${NC}"
-        exit 1
-    fi
+    echo -e "${GREEN}Tag v${NEW_VERSION} already exists (created by changeset)${NC}"
+else
+    echo -e "${YELLOW}Creating tag v${NEW_VERSION}...${NC}"
+    git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
+    echo -e "${GREEN}Tag created!${NC}"
 fi
 echo ""
 
 # Commit changes
-echo -e "${YELLOW}Committing changes...${NC}"
+echo -e "${YELLOW}Committing and pushing...${NC}"
 if git diff --quiet && git diff --cached --quiet; then
     echo -e "${YELLOW}No changes to commit${NC}"
 else
@@ -176,12 +165,6 @@ else
     git commit -m "chore: release v${NEW_VERSION}"
     echo -e "${GREEN}Committed!${NC}"
 fi
-echo ""
-
-# Create and push tag
-echo -e "${YELLOW}Creating tag v${NEW_VERSION}...${NC}"
-git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
-echo -e "${GREEN}Tag created!${NC}"
 echo ""
 
 # Push
